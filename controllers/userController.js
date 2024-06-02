@@ -57,3 +57,36 @@ exports.getUser = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: 'Error retrieving user', error: error.message });
   }
 });
+
+// Update a user by ID
+exports.updateUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(id, updateData, { new: true });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ message: 'Error updating user', error: error.message });
+  }
+});
+
+// Delete a user by ID
+exports.deleteUser = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json({ message: 'User deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return res.status(500).json({ message: 'Error deleting user', error: error.message });
+  }
+});
