@@ -54,7 +54,7 @@ describe('User API', () => {
       profile_picture: 'John Doe profile pic',
     });
 
-    console.log('Post User Response:', res.body); // Log the response body for debugging
+    console.log('Edit User Response:', res.body); // Log the response body for debugging
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('username', 'initialuser');
@@ -70,5 +70,6 @@ describe('User API', () => {
     console.log('Delete User Response:', res.body); // Log the response body for debugging
 
     expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('message', 'User deleted successfully');
   });
 });
