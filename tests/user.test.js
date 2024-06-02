@@ -72,4 +72,18 @@ describe('User API', () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveProperty('message', 'User deleted successfully');
   });
+
+  it('should log the existing user in', async () => {
+    const res = await request(app).post('/api/users/login').send({
+      username: defaultUser.username,
+      password: 'initialpassword', // Use the plain password for login
+    });
+
+    console.log('Login Response:', res.body); // Log the response body for debugging
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toHaveProperty('token');
+    expect(res.body.user).toHaveProperty('username', defaultUser.username);
+    expect(res.body).toHaveProperty('message', 'User login successful');
+  });
 });

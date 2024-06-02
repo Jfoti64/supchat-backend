@@ -1,6 +1,7 @@
 const { body, validationResult } = require('express-validator');
 const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 // Register a new user
@@ -90,3 +91,30 @@ exports.deleteUser = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: 'Error deleting user', error: error.message });
   }
 });
+
+// User login
+exports.loginUser = [
+  body('username').trim().isLength({ min: 1 }).escape(),
+  body('password').trim().isLength({ min: 1 }).escape(),
+
+  asyncHandler(async (req, res, next) => {
+    const { username, password } = req.body; // Use req.body instead of req.params
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const user = await User.findOne({ username });
+    console.log(`USER: ${user}`);
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: 'Invalid username or password' });
+    }
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.status(200).json({ token, user, message: 'User login successful' });
+  }),
+];
