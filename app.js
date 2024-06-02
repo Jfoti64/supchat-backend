@@ -5,7 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 //const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
-//const messageRoutes = require('./routes/messageRoutes');
+const messageRoutes = require('./routes/messageRoutes');
 
 dotenv.config();
 
@@ -19,6 +19,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-//app.use('/api/messages', messageRoutes);
+app.use('/api/messages', messageRoutes);
 
 module.exports = app;

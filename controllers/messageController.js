@@ -8,7 +8,7 @@ exports.sendMessage = asyncHandler(async (req, res) => {
 
   // Check if a conversation already exists between the sender and receiver
   let conversation = await Conversation.findOne({
-    participants: { $all: [senderId, receiverId] }
+    participants: { $all: [senderId, receiverId] },
   });
 
   // If no conversation exists, create a new one
@@ -25,6 +25,8 @@ exports.sendMessage = asyncHandler(async (req, res) => {
     receiverId,
     content,
   });
+
+  console.log(`Message: ${message}`);
 
   await message.save();
 
