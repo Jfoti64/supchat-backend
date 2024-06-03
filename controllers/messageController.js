@@ -37,7 +37,24 @@ exports.sendMessage = asyncHandler(async (req, res) => {
 exports.getMessages = asyncHandler(async (req, res) => {
   const { conversationId } = req.params;
 
-  const messages = await Message.find({ conversationId }).sort({ timestamp: 1 });
+  const messages = await Message.find({ conversationId })
+    .sort({ timestamp: 1 })
+    .populate('senderId', 'username');
 
   res.status(200).json(messages);
+});
+
+// Get user conversations
+exports.getUserConversations = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const conversations = await Conversation.find({ participants: userId }).populate(
+    'participants',
+    'username'
+  );
+
+  if (!conversations.length) {
+    return res.status(404).json({ message: 'No conversations found' });
+  }
+
+  res.status(200).json(conversations);
 });
