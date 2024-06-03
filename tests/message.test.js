@@ -1,6 +1,4 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 const app = require('../app');
 const User = require('../models/user');
 const Conversation = require('../models/conversation');
@@ -9,23 +7,30 @@ const Message = require('../models/message');
 describe('Message API', () => {
   let user1;
   let user2;
-  let conversation;
+  let token;
 
-  beforeAll(async () => {
-    // Create users
+  beforeEach(async () => {
     user1 = await User.create({
       first_name: 'User',
       family_name: 'One',
       username: 'userone',
-      password: await bcrypt.hash('password1', 10),
+      password: await 'password1',
     });
 
     user2 = await User.create({
       first_name: 'User',
       family_name: 'Two',
       username: 'usertwo',
-      password: await bcrypt.hash('password2', 10),
+      password: await 'password2',
     });
+
+    const loginRes = await request(app).post('/api/users/login').send({
+      username: 'userone',
+      password: 'password1',
+    });
+
+    token = loginRes.body.token;
+    console.log('Login Token:', token); // Log the token after login
   });
 
   afterEach(async () => {
@@ -35,17 +40,19 @@ describe('Message API', () => {
 
   afterAll(async () => {
     await User.deleteMany({});
-    await mongoose.connection.close();
   });
 
   it('should create a conversation and send a message', async () => {
-    const res = await request(app).post('/api/messages/send').send({
-      senderId: user1._id,
-      receiverId: user2._id,
-      content: 'Hello, User Two!',
-    });
+    const res = await request(app)
+      .post('/api/messages/send')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        senderId: user1._id,
+        receiverId: user2._id,
+        content: 'Hello, User Two!',
+      });
 
-    console.log('Send Message Response:', res.body); // Log the response body for debugging
+    console.log('Send Message Response:', res.body);
 
     expect(res.statusCode).toEqual(201);
     expect(res.body).toHaveProperty('_id');
@@ -53,8 +60,7 @@ describe('Message API', () => {
     expect(res.body).toHaveProperty('receiverId', user2._id.toString());
     expect(res.body).toHaveProperty('content', 'Hello, User Two!');
 
-    // Check if the conversation was created
-    conversation = await Conversation.findOne({
+    const conversation = await Conversation.findOne({
       participants: { $all: [user1._id, user2._id] },
     });
 
@@ -64,7 +70,7 @@ describe('Message API', () => {
   });
 
   it('should retrieve messages in a conversation', async () => {
-    conversation = await Conversation.create({
+    const conversation = await Conversation.create({
       participants: [user1._id, user2._id],
     });
 
@@ -82,9 +88,11 @@ describe('Message API', () => {
       content: 'Hello, User One!',
     });
 
-    const res = await request(app).get(`/api/messages/${conversation._id}`);
+    const res = await request(app)
+      .get(`/api/messages/${conversation._id}`)
+      .set('Authorization', `Bearer ${token}`);
 
-    console.log('Get Messages Response:', res.body); // Log the response body for debugging
+    console.log('Get Messages Response:', res.body);
 
     expect(res.statusCode).toEqual(200);
     expect(res.body).toHaveLength(2);

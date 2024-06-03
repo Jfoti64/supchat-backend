@@ -1,11 +1,8 @@
+const { connectTestDB, disconnectTestDB } = require('./config/mongoConfigTesting');
 const mongoose = require('mongoose');
-const { connectDB, disconnectDB } = require('./config/mongoConfigTesting');
-const dotenv = require('dotenv');
-
-dotenv.config({ path: './.env.test' });
 
 beforeAll(async () => {
-  await connectDB();
+  await connectTestDB();
 });
 
 afterEach(async () => {
@@ -13,5 +10,5 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  await disconnectDB();
+  await disconnectTestDB();
 });
