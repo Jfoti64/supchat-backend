@@ -1,3 +1,4 @@
+// controllers/messageController.js
 const asyncHandler = require('express-async-handler');
 const Message = require('../models/message');
 const Conversation = require('../models/conversation');
@@ -26,9 +27,11 @@ exports.sendMessage = asyncHandler(async (req, res) => {
     content,
   });
 
-  console.log(`Message: ${message}`);
-
   await message.save();
+
+  // Update the last message in the conversation
+  conversation.lastMessage = message._id;
+  await conversation.save();
 
   res.status(201).json(message);
 });
@@ -47,12 +50,11 @@ exports.getMessages = asyncHandler(async (req, res) => {
 // Get user conversations
 exports.getUserConversations = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const conversations = await Conversation.find({ participants: userId }).populate(
-    'participants',
-    'username'
-  );
+  const conversations = await Conversation.find({ participants: userId })
+    .populate('lastMessage')
+    .populate('participants', 'username');
 
-  if (!conversations.length) {
+  if (!conversations) {
     return res.status(404).json({ message: 'No conversations found' });
   }
 
