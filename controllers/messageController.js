@@ -78,3 +78,22 @@ exports.createConversation = asyncHandler(async (req, res) => {
 
   res.status(201).json(conversation);
 });
+
+// Delete a conversation and all its related messages
+exports.deleteConversation = asyncHandler(async (req, res) => {
+  const { conversationId } = req.params;
+
+  try {
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: 'Conversation not found' });
+    }
+
+    await conversation.deleteOne(); // This triggers the pre('deleteOne') middleware
+
+    res.status(200).json({ message: 'Conversation and related messages deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting conversation:', error);
+    res.status(500).json({ message: 'Error deleting conversation', error: error.message });
+  }
+});
