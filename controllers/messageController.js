@@ -41,7 +41,7 @@ exports.getMessages = asyncHandler(async (req, res) => {
 
   const messages = await Message.find({ conversationId })
     .sort({ timestamp: 1 })
-    .populate('senderId', 'username');
+    .populate('senderId', 'username profile_picture');
 
   res.status(200).json(messages);
 });
