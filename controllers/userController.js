@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
+const upload = require('../middleware/upload');
 
 // Register a new user
 exports.registerUser = [
@@ -135,3 +136,34 @@ exports.getUserByUsername = asyncHandler(async (req, res) => {
     return res.status(500).json({ message: 'Error finding user', error: error.message });
   }
 });
+
+// Update a user by ID to include profile picture
+exports.uploadProfilePicture = [
+  upload,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    try {
+      const user = await User.findByIdAndUpdate(
+        id,
+        { profile_picture: req.file.filename },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      console.error('Error updating user profile picture:', error);
+      return res
+        .status(500)
+        .json({ message: 'Error updating user profile picture', error: error.message });
+    }
+  }),
+];
