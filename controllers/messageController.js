@@ -1,4 +1,3 @@
-// controllers/messageController.js
 const asyncHandler = require('express-async-handler');
 const Message = require('../models/message');
 const Conversation = require('../models/conversation');
@@ -59,4 +58,23 @@ exports.getUserConversations = asyncHandler(async (req, res) => {
   }
 
   res.status(200).json(conversations);
+});
+
+// Create new conversation
+exports.createConversation = asyncHandler(async (req, res) => {
+  const { userId, participantId } = req.body; // Get userId and participantId from the request body
+
+  // Check if a conversation already exists between the user and participant
+  let conversation = await Conversation.findOne({
+    participants: { $all: [userId, participantId] },
+  });
+
+  if (!conversation) {
+    conversation = new Conversation({
+      participants: [userId, participantId],
+    });
+    await conversation.save();
+  }
+
+  res.status(201).json(conversation);
 });
