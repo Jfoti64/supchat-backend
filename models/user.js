@@ -6,7 +6,10 @@ const UserSchema = new mongoose.Schema({
   family_name: { type: String, required: true, maxLength: 100 },
   username: { type: String, required: true, unique: true, maxLength: 100 },
   password: { type: String, required: true, maxLength: 100 },
-  profile_picture: { type: String },
+  profile_picture: {
+    type: String,
+    default: 'default.jpg', // Default profile picture file name
+  },
   bio: { type: String, maxLength: 10000 },
   created_at: { type: Date, default: Date.now },
 });
