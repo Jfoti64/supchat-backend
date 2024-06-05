@@ -51,7 +51,7 @@ exports.getUserConversations = asyncHandler(async (req, res) => {
   const userId = req.user.id;
   const conversations = await Conversation.find({ participants: userId })
     .populate('lastMessage')
-    .populate('participants', 'username');
+    .populate('participants', 'username profile_picture');
 
   if (!conversations) {
     return res.status(404).json({ message: 'No conversations found' });
